@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "../prof.h"
+#include "prof.h"
 
 #define ENTITIES 100000
 #define TICKS 100
@@ -9,13 +9,13 @@ typedef struct vec3 {
     double e[3];
 } vec3;
 
-static inline vec3 vec3_new()
+inline static vec3 vec3_new()
 {
-    vec3 n = {.e = {0.0, 0.0, 0.0}};
+    vec3 n = {.e = {0.0, -0.5, 0.0}};
     return n;
 }
 
-static inline vec3 vec3_sum(vec3 a, vec3 b)
+inline static vec3 vec3_sum(vec3 a, vec3 b)
 {
     vec3 result = a;
     result.e[0] += b.e[0];
@@ -24,7 +24,7 @@ static inline vec3 vec3_sum(vec3 a, vec3 b)
     return result;
 }
 
-static inline vec3 vec3_mul(vec3 a, double b)
+inline static vec3 vec3_mul(vec3 a, double b)
 {
     vec3 result = a;
     result.e[0] *= b;
@@ -44,7 +44,7 @@ typedef struct entity {
 void update_entity(entity *e)
 {
     if (e->alive) {
-        vec3 t1 = vec3_new(0.0, -0.5, 0.0);
+        vec3 t1 = vec3_new();
         e->position = vec3_sum(e->position, t1);
         vec3 t2 = e->direction;
         t2 = vec3_mul(t2, e->speed);
@@ -58,6 +58,7 @@ void update_entity(entity *e)
 
 void test_entities()
 {
+ // sogus
     entity entities[ENTITIES] = {0};
 
     PROF_BEGIN(update_method)
@@ -74,7 +75,7 @@ void test_entities()
             entity e = entities[i];
 
             if (e.alive) {
-                vec3 t1 = vec3_new(0.0, -0.5, 0.0);
+                vec3 t1 = vec3_new();
                 e.position = vec3_sum(e.position, t1);
                 vec3 t2 = e.direction;
                 t2 = vec3_mul(t2, e.speed);
