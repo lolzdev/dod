@@ -1,22 +1,16 @@
 #include <iostream>
-#include <cmath>
-#include <vector>
-#include "entity_extern.hpp"
-#include "../prof.h"
+#include <array>
+#include <type_traits>
+#include "prof.h"
 #include "common.hpp"
+#include "entity_extern.hpp"
 
 #define ENTITIES 100000
 #define TICKS 100
 
 class Entity {
 public:
-    Entity() {
-        this->position = vec3(0.0, 0.0, 0.0);
-        this->direction = vec3(0.0, 0.0, 0.0);
-        this->speed = 5.0;
-        this->health = 100.0;
-        this->alive = true;
-    }
+    Entity() : position(0.0,0.0,0.0), direction(0.0,0.0,0.0), speed(5.0), health(100.0),alive(true)  {}
 
     vec3 position;
     vec3 direction;
@@ -24,17 +18,17 @@ public:
     double health;
     bool alive;
 
-    void update()
+    inline void update()
     {
-        if (this->alive) {
-            this->position += vec3(0.0, -0.5, 0.0);
-            auto tmp = this->direction;
-            tmp *= this->speed;
-            this->position += tmp;
+        if (alive) {
+            position += vec3(0.0, -0.5, 0.0);
+            auto tmp = direction;
+            tmp *= speed;
+            position += tmp;
         }
 
-        if (this->health <= 0.0) {
-            this->alive = false;
+        if (health <= 0.0) {
+            alive = false;
         }
     }
 };
@@ -42,27 +36,24 @@ public:
 
 void test_entities()
 {
-    static std::vector<Entity> entities;
-    for (int i=0; i < ENTITIES; i++) {
-        entities.push_back(Entity());
-    }
+	std::cout << std::is_standard_layout<Entity>::value << std::endl;
+    static std::array<Entity,ENTITIES> entities;
+
 
     PROF_BEGIN(update_method)
     for (int t=0; t < TICKS; t++) {
-        for (int i=0; i < ENTITIES; i++) {
-            entities[i].update();
+        for (auto & entity : entities) {
+            entity.update();
         }
     }
     PROF_END
 
     PROF_BEGIN(update_inline)
     for (int t=0; t < TICKS; t++) {
-        for (int i=0; i < ENTITIES; i++) {
-            auto entity = entities[i];
-
+        for (auto& entity : entities) {
             if (entity.alive) {
                 entity.position += vec3(0.0, -0.5, 0.0);
-                auto tmp = entity.direction;
+                auto& tmp = entity.direction;
                 tmp *= entity.speed;
                 entity.position += tmp;
             }
@@ -77,24 +68,19 @@ void test_entities()
 
 void test_entities_ext()
 {
-    static std::vector<ext::Entity> entities;
-    for (int i=0; i < ENTITIES; i++) {
-        entities.push_back(ext::Entity());
-    }
+    static std::array<ext::Entity,ENTITIES> entities;
 
     PROF_BEGIN(update_method_ext)
     for (int t=0; t < TICKS; t++) {
-        for (int i=0; i < ENTITIES; i++) {
-            entities[i].update();
+        for (auto & entity : entities) {
+            entity.update();
         }
     }
     PROF_END
 
     PROF_BEGIN(update_inline_ext)
     for (int t=0; t < TICKS; t++) {
-        for (int i=0; i < ENTITIES; i++) {
-            auto entity = entities[i];
-
+        for (auto & entity : entities) {
             if (entity.alive) {
                 entity.position += vec3(0.0, -0.5, 0.0);
                 auto tmp = entity.direction;
@@ -110,7 +96,7 @@ void test_entities_ext()
     PROF_END
 }
 
-int main(void)
+int main()
 {
     test_entities();
     test_entities_ext();
